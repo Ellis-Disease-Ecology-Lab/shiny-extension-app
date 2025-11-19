@@ -33,7 +33,7 @@ devtools::install_github("Ellis-Disease-Ecology-Lab/shiny-extension-app")
 Once installed, you can launch the application with:
 
 ```r
-shiny-extension-app::run_app()
+shinyExtensionApp::run_app()
 ```
 
 ## Dependencies
