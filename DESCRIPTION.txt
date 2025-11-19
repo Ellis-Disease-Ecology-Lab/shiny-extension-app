@@ -1,0 +1,20 @@
+Package: shiny-extension-app
+Title: Extension Materials Analysis Tool
+Version: 0.1.0
+Authors@R: 
+    person("Vincenzo", "Ellis", , "vaellis@udel.edu", role = c("aut", "cre"))
+Description: A Shiny application for evaluating and improving extension materials.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Imports: 
+    shiny,
+    bslib,
+    shinyWidgets,
+    tidyverse,
+    DT,
+    htmltools,
+    ggradar2
+Remotes:
+    xl0418/ggradar2
+RoxygenNote: 7.2.3
