@@ -1,11 +1,8 @@
-
 ## ggradar2
 # devtools::install_github("xl0418/ggradar2", dependencies = TRUE)
 
 library(shiny)
 library(bslib)
-library(shinythemes) # optional; using bslib bootswatch instead
-library(shinyWidgets)
 library(tidyverse)
 library(ggradar2)
 library(DT)
@@ -32,10 +29,10 @@ sugg_csv_candidates <- c(
 sugg_csv_path <- sugg_csv_candidates[file.exists(sugg_csv_candidates)][1]
 
 read_suggestions_csv <- function(path) {
-  readr::read_csv(path, show_col_types = FALSE, progress = FALSE) |>
-    dplyr::rename(qnum = statement_number) |>
-    dplyr::mutate(qnum = as.integer(qnum)) |>
-    dplyr::select(qnum, category, statement, suggestion) |>
+  readr::read_csv(path, show_col_types = FALSE, progress = FALSE) %>%
+    dplyr::rename(qnum = statement_number) %>%
+    dplyr::mutate(qnum = as.integer(qnum)) %>%
+    dplyr::select(qnum, category, statement, suggestion) %>%
     dplyr::arrange(qnum)
 }
 
@@ -87,21 +84,12 @@ ui <- fluidPage(
     )
   ),
   
-  # Generate report toggle + (optional) link to last generated report
+  # Link to last generated report (appears after you click Submit)
   fluidRow(
     column(
       width = 12,
       div(class = "d-flex align-items-center gap-3",
-          shinyWidgets::switchInput(
-            inputId  = "gen_report",
-            label    = "Generate report", # label shown to the left of the switch
-            value    = FALSE,             # default OFF
-            onLabel  = "Yes",
-            offLabel = "No",
-            size     = "small",           # "mini", "small", "normal", "large"
-            inline   = TRUE
-          ),
-          uiOutput("lastReportLink")      # optional link to the last generated report
+          uiOutput("lastReportLink")
       )
     )
   ),
@@ -358,12 +346,12 @@ server <- function(input, output, session) {
     req(suggestions_tbl)
     req(get_scores_long())
     
-    get_scores_long() |>
-      dplyr::select(qnum, Score) |>
-      dplyr::filter(Score %in% c(1, 2)) |>
-      dplyr::mutate(Rating = ifelse(Score == 1, "Poor", "Fair")) |>
-      dplyr::left_join(suggestions_tbl(), by = "qnum") |>
-      dplyr::arrange(qnum) |>
+    get_scores_long() %>%
+      dplyr::select(qnum, Score) %>%
+      dplyr::filter(Score %in% c(1, 2)) %>%
+      dplyr::mutate(Rating = ifelse(Score == 1, "Poor", "Fair")) %>%
+      dplyr::left_join(suggestions_tbl(), by = "qnum") %>%
+      dplyr::arrange(qnum) %>%
       dplyr::select(
         Category = category,
         `Statement#` = qnum,
@@ -423,11 +411,8 @@ server <- function(input, output, session) {
   })
   
   
-  # ---------- Generate HTML report when toggle == Yes ----------
+  # ---------- Generate HTML report on Submit ----------
   observeEvent(input$submit, {
-    # Respect the toggle (switchInput returns TRUE/FALSE)
-    gen_yes <- isTRUE(input$gen_report)
-    if (!gen_yes) return(invisible())
     
     # Gather items to include
     name <- input$doc_name
@@ -513,11 +498,11 @@ server <- function(input, output, session) {
     )
     
     # ---------- Build 'Suggestions for Improvement' for items scored 1 or 2 ----------
-    low_scores <- isolate(get_scores_long()) |>
-      dplyr::select(qnum, Score) |>
-      dplyr::filter(Score %in% c(1, 2)) |>
-      dplyr::mutate(Rating = ifelse(Score == 1, "Poor", "Fair")) |>
-      dplyr::left_join(suggestions_tbl(), by = "qnum") |>
+    low_scores <- isolate(get_scores_long()) %>%
+      dplyr::select(qnum, Score) %>%
+      dplyr::filter(Score %in% c(1, 2)) %>%
+      dplyr::mutate(Rating = ifelse(Score == 1, "Poor", "Fair")) %>%
+      dplyr::left_join(suggestions_tbl(), by = "qnum") %>%
       dplyr::arrange(qnum)
     
     
