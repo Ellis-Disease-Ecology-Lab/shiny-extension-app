@@ -22,7 +22,7 @@ You can install the application from GitHub using the `devtools` package. Run th
 # Install devtools if you do not have it already
 if (!require("devtools")) install.packages("devtools")
 
-# Install the shiny-extension-app package
+# Install the package
 devtools::install_github("Ellis-Disease-Ecology-Lab/shiny-extension-app")
 ```
 
