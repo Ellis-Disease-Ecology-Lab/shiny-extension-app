@@ -50,23 +50,23 @@ ui <- fluidPage(
   "))),
   
   # Custom header row with logo + link
-  div(class = "app-header",
-      # Logo as clickable link
-      tags$a(
-        href = "https://www.vectorednetwork.org/#",
-        target = "_blank",
-        tags$img(
-          src = "img/VectorED Logo with Print.png",
-          alt = "Organization logo",
-          style = "height: 140px;"
-        )
-      ),
-      # Spacer
-      div(style = "flex:1;")
-  ),
+#  div(class = "app-header",
+#      # Logo as clickable link
+#      tags$a(
+#        href = "https://www.vectorednetwork.org/#",
+#        target = "_blank",
+#        tags$img(
+#          src = "img/VectorED Logo with Print.png",
+#          alt = "Organization logo",
+#          style = "height: 140px;"
+#        )
+#      ),
+#      # Spacer
+#      div(style = "flex:1;")
+#  ),
   
   # App title
-  titlePanel("Extension Materials Analysis Tool"),
+  titlePanel("Antenna Tool"),
   
   # Link to the Word document (normal case, not all caps)
   fluidRow(
@@ -74,7 +74,7 @@ ui <- fluidPage(
       width = 12,
       div(style = "margin-bottom: 10px;",
           tags$a(
-            "Rating Guide Document",
+            "Scoring Guide Document",
             href   = "Extension_Materials_Scoring_Guide_Brand.pdf",  # place in /www
             target = "_blank",
             class  = "btn btn-link p-0 fw-bold",
