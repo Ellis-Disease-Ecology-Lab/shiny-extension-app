@@ -1,4 +1,4 @@
-# Extension Materials Analysis Tool
+# Antenna Tool
 
 This is a shiny app for evaluating and improving extension materials. Here you can download it as an R package to run it on your own computer.
 
