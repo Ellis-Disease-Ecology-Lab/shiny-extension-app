@@ -1,8 +1,11 @@
+
 ## ggradar2
 # devtools::install_github("xl0418/ggradar2", dependencies = TRUE)
 
 library(shiny)
 library(bslib)
+library(shinythemes) # optional; using bslib bootswatch instead
+library(shinyWidgets)
 library(tidyverse)
 library(ggradar2)
 library(DT)
@@ -29,10 +32,10 @@ sugg_csv_candidates <- c(
 sugg_csv_path <- sugg_csv_candidates[file.exists(sugg_csv_candidates)][1]
 
 read_suggestions_csv <- function(path) {
-  readr::read_csv(path, show_col_types = FALSE, progress = FALSE) %>%
-    dplyr::rename(qnum = statement_number) %>%
-    dplyr::mutate(qnum = as.integer(qnum)) %>%
-    dplyr::select(qnum, category, statement, suggestion) %>%
+  readr::read_csv(path, show_col_types = FALSE, progress = FALSE) |>
+    dplyr::rename(qnum = statement_number) |>
+    dplyr::mutate(qnum = as.integer(qnum)) |>
+    dplyr::select(qnum, category, statement, suggestion) |>
     dplyr::arrange(qnum)
 }
 
@@ -51,7 +54,7 @@ ui <- fluidPage(
   
   # Custom header row with logo + link
 #  div(class = "app-header",
-#      # Logo as clickable link
+      # Logo as clickable link
 #      tags$a(
 #        href = "https://www.vectorednetwork.org/#",
 #        target = "_blank",
@@ -61,7 +64,7 @@ ui <- fluidPage(
 #          style = "height: 140px;"
 #        )
 #      ),
-#      # Spacer
+      # Spacer
 #      div(style = "flex:1;")
 #  ),
   
@@ -84,12 +87,21 @@ ui <- fluidPage(
     )
   ),
   
-  # Link to last generated report (appears after you click Submit)
+  # Generate report toggle + (optional) link to last generated report
   fluidRow(
     column(
       width = 12,
       div(class = "d-flex align-items-center gap-3",
-          uiOutput("lastReportLink")
+          shinyWidgets::switchInput(
+            inputId  = "gen_report",
+            label    = "Generate report", # label shown to the left of the switch
+            value    = FALSE,             # default OFF
+            onLabel  = "Yes",
+            offLabel = "No",
+            size     = "small",           # "mini", "small", "normal", "large"
+            inline   = TRUE
+          ),
+          uiOutput("lastReportLink")      # optional link to the last generated report
       )
     )
   ),
@@ -101,7 +113,7 @@ ui <- fluidPage(
       h3("Rate your extension material."),
       p(HTML(
         paste0(
-          "Please rate each of the following 29 statements (grouped into five categories) using the dropdown menus. ",
+          "Please rate each of the following 27 statements (grouped into five categories) using the dropdown menus. ",
           "<b>Ratings are on a 4-point scale</b>: ",
           "(Poor = 1, Fair = 2, Acceptable = 3, Excellent = 4)."
         )
@@ -144,25 +156,23 @@ ui <- fluidPage(
       selectInput("c3_q1", "16. The document is accessible.", choices = choices_1_4, selected = 3),
       selectInput("c3_q2", "17. The document is culturally relevant.", choices = choices_1_4, selected = 3),
       selectInput("c3_q3", "18. The document uses graphics/models in illustrations that reflect target audience(s) or area(s).", choices = choices_1_4, selected = 3),
-      selectInput("c3_q4", "19. The document is created by a community-trusted source.", choices = choices_1_4, selected = 3),
       
       # --- Category 4 ---
       tags$hr(),
       h4("Visual Design"),
-      selectInput("c4_q1", "20. The document is clear and organized.", choices = choices_1_4, selected = 3),
-      selectInput("c4_q2", "21. The document is visually appealing including design, font, and layout.", choices = choices_1_4, selected = 3),
-      selectInput("c4_q3", "22. The document uses graphics and icons.", choices = choices_1_4, selected = 3),
-      selectInput("c4_q4", "23. The document is concise and focused.", choices = choices_1_4, selected = 3),
-      selectInput("c4_q5", "24. The document is creative and original.", choices = choices_1_4, selected = 3),
+      selectInput("c4_q1", "19. The document is clear and organized.", choices = choices_1_4, selected = 3),
+      selectInput("c4_q2", "20. The document is visually appealing including design, font, and layout.", choices = choices_1_4, selected = 3),
+      selectInput("c4_q3", "21. The document uses graphics and icons.", choices = choices_1_4, selected = 3),
+      selectInput("c4_q5", "22. The document is creative and original.", choices = choices_1_4, selected = 3),
       
       # --- Category 5 ---
       tags$hr(),
       h4("Action Based"),
-      selectInput("c5_q1", "25. The document provides a specific solution that is based on an action or behavior.", choices = choices_1_4, selected = 3),
-      selectInput("c5_q2", "26. The solution is achievable and promotes self-efficacy.", choices = choices_1_4, selected = 3),
-      selectInput("c5_q3", "27. The solution does not cause potential harm, fear, and/or stress.", choices = choices_1_4, selected = 3),
-      selectInput("c5_q4", "28. The solution does not require hard to obtain materials.", choices = choices_1_4, selected = 3),
-      selectInput("c5_q5", "29. The solution can be quantified, evaluated, and/or assessed.", choices = choices_1_4, selected = 3),
+      selectInput("c5_q1", "23. The document provides a specific solution that is based on an action or behavior.", choices = choices_1_4, selected = 3),
+      selectInput("c5_q2", "24. The solution is achievable and promotes self-efficacy.", choices = choices_1_4, selected = 3),
+      selectInput("c5_q3", "25. The solution does not cause potential harm, fear, and/or stress.", choices = choices_1_4, selected = 3),
+      selectInput("c5_q4", "26. The solution does not require hard to obtain materials.", choices = choices_1_4, selected = 3),
+      selectInput("c5_q5", "27. The solution can be quantified, evaluated, and/or assessed.", choices = choices_1_4, selected = 3),
       
       # Action button
       tags$hr(),
@@ -222,19 +232,19 @@ server <- function(input, output, session) {
   # ---------- Collect scores long-form ----------
   get_scores_long <- reactive({
     tibble(
-      qnum = 1:29,
+      qnum = 1:27,
       Category = c(
         rep("Standards", 8),
         rep("Content\nDevelopment", 7),
-        rep("Targeted\nMessaging", 4),
-        rep("Visual Design", 5),
+        rep("Targeted\nMessaging", 3),
+        rep("Visual Design", 4),
         rep("Action Based", 5)
       ),
       Score = as.numeric(c(
         input$c1_q1, input$c1_q2, input$c1_q3, input$c1_q4, input$c1_q5, input$c1_q6, input$c1_q7, input$c1_q8,
         input$c2_q1, input$c2_q2, input$c2_q3, input$c2_q4, input$c2_q5, input$c2_q6, input$c2_q7,
-        input$c3_q1, input$c3_q2, input$c3_q3, input$c3_q4,
-        input$c4_q1, input$c4_q2, input$c4_q3, input$c4_q4, input$c4_q5,
+        input$c3_q1, input$c3_q2, input$c3_q3,
+        input$c4_q1, input$c4_q2, input$c4_q3, input$c4_q5,
         input$c5_q1, input$c5_q2, input$c5_q3, input$c5_q4, input$c5_q5
       ))
     )
@@ -346,12 +356,12 @@ server <- function(input, output, session) {
     req(suggestions_tbl)
     req(get_scores_long())
     
-    get_scores_long() %>%
-      dplyr::select(qnum, Score) %>%
-      dplyr::filter(Score %in% c(1, 2)) %>%
-      dplyr::mutate(Rating = ifelse(Score == 1, "Poor", "Fair")) %>%
-      dplyr::left_join(suggestions_tbl(), by = "qnum") %>%
-      dplyr::arrange(qnum) %>%
+    get_scores_long() |>
+      dplyr::select(qnum, Score) |>
+      dplyr::filter(Score %in% c(1, 2)) |>
+      dplyr::mutate(Rating = ifelse(Score == 1, "Poor", "Fair")) |>
+      dplyr::left_join(suggestions_tbl(), by = "qnum") |>
+      dplyr::arrange(qnum) |>
       dplyr::select(
         Category = category,
         `Statement#` = qnum,
@@ -411,8 +421,11 @@ server <- function(input, output, session) {
   })
   
   
-  # ---------- Generate HTML report on Submit ----------
+  # ---------- Generate HTML report when toggle == Yes ----------
   observeEvent(input$submit, {
+    # Respect the toggle (switchInput returns TRUE/FALSE)
+    gen_yes <- isTRUE(input$gen_report)
+    if (!gen_yes) return(invisible())
     
     # Gather items to include
     name <- input$doc_name
@@ -498,11 +511,11 @@ server <- function(input, output, session) {
     )
     
     # ---------- Build 'Suggestions for Improvement' for items scored 1 or 2 ----------
-    low_scores <- isolate(get_scores_long()) %>%
-      dplyr::select(qnum, Score) %>%
-      dplyr::filter(Score %in% c(1, 2)) %>%
-      dplyr::mutate(Rating = ifelse(Score == 1, "Poor", "Fair")) %>%
-      dplyr::left_join(suggestions_tbl(), by = "qnum") %>%
+    low_scores <- isolate(get_scores_long()) |>
+      dplyr::select(qnum, Score) |>
+      dplyr::filter(Score %in% c(1, 2)) |>
+      dplyr::mutate(Rating = ifelse(Score == 1, "Poor", "Fair")) |>
+      dplyr::left_join(suggestions_tbl(), by = "qnum") |>
       dplyr::arrange(qnum)
     
     
